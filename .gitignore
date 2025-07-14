@@ -63,12 +63,16 @@ dmypy.json
 data/scat/*.csv
 data/scat/*.parquet
 data/processed/
+!data/.gitkeep
+!data/*/.gitkeep
 
 # Models
 models/checkpoints/*.pt
 models/checkpoints/*.pth
 models/checkpoints/*.pkl
 models/checkpoints/*.h5
+!models/.gitkeep
+!models/*/.gitkeep
 
 # Results
 results/experiments/*.json
