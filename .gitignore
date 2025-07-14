@@ -74,7 +74,9 @@ models/checkpoints/*.h5
 results/experiments/*.json
 results/experiments/*.png
 results/experiments/*.pdf
-results/logs/
+results/logs/*
+!results/.gitkeep
+!results/*/.gitkeep
 
 # Docker
 docker-compose.override.yml
