@@ -97,36 +97,52 @@ def extract_trajectory_df(flight_data: dict[str, Any]) -> pd.DataFrame:
 
     df = pd.DataFrame(records)
     if not df.empty:
+        # Remove any duplicate timestamps (keeping first occurrence)
+        df = df.drop_duplicates(subset=['time'], keep='first')
+        # Sort by time to ensure proper ordering
+        df = df.sort_values('time').reset_index(drop=True)
+        
         df['ground_speed_kts'] = np.sqrt(df['vx']**2 + df['vy']**2) * 1.94384  # m/s to knots
         df['time_elapsed'] = (df['time'] - df['time'].iloc[0]).dt.total_seconds() / 60  # minutes
 
     return df
 
 
-def extract_predicted_trajectory(flight_data: dict[str, Any]) -> pd.DataFrame:
-    """Extract predicted trajectory waypoints."""
+def extract_flight_plan_trajectory(flight_data: dict[str, Any]) -> pd.DataFrame:
+    """Extract flight plan trajectory waypoints."""
     pred_traj = flight_data.get('predicted_trajectory', [])
-
+    
+    # Use the most recent prediction (last one in the list)
+    # as it should have the most up-to-date flight plan
+    if not pred_traj:
+        return pd.DataFrame()
+    
+    latest_traj = pred_traj[-1]
+    
     records = []
-    for traj in pred_traj:
-        for waypoint in traj.get('route', []):
-            record = {
-                'time': pd.to_datetime(waypoint.get('eto')),
-                'fix_name': waypoint.get('fix_name'),
-                'fix_kind': waypoint.get('fix_kind'),
-                'lat': waypoint.get('lat'),
-                'lon': waypoint.get('lon'),
-                'flight_level': waypoint.get('afl_value', 0),
-                'altitude_ft': waypoint.get('afl_value', 0) * 100,
-                'is_ato': waypoint.get('is_ato', False)
-            }
-            records.append(record)
+    for waypoint in latest_traj.get('route', []):
+        record = {
+            'time': pd.to_datetime(waypoint.get('eto')),
+            'fix_name': waypoint.get('fix_name'),
+            'fix_kind': waypoint.get('fix_kind'),
+            'lat': waypoint.get('lat'),
+            'lon': waypoint.get('lon'),
+            'flight_level': waypoint.get('afl_value', 0),
+            'altitude_ft': waypoint.get('afl_value', 0) * 100,
+            'is_ato': waypoint.get('is_ato', False)
+        }
+        records.append(record)
 
-    return pd.DataFrame(records)
+    df = pd.DataFrame(records)
+    if not df.empty:
+        # Sort by time to ensure proper ordering
+        df = df.sort_values('time').reset_index(drop=True)
+    
+    return df
 
 
-def create_trajectory_map(actual_df: pd.DataFrame, predicted_df: pd.DataFrame) -> folium.Map:
-    """Create a folium map with actual and predicted trajectories."""
+def create_trajectory_map(actual_df: pd.DataFrame, flight_plan_df: pd.DataFrame) -> folium.Map:
+    """Create a folium map with actual and flight plan trajectories."""
     if actual_df.empty:
         return folium.Map(location=[59.0, 18.0], zoom_start=6)
 
@@ -159,20 +175,20 @@ def create_trajectory_map(actual_df: pd.DataFrame, predicted_df: pd.DataFrame) -
         icon=folium.Icon(color='red', icon='stop')
     ).add_to(m)
 
-    # Add predicted trajectory if available
-    if not predicted_df.empty:
-        pred_coords = predicted_df[['lat', 'lon']].values.tolist()
+    # Add flight plan trajectory if available
+    if not flight_plan_df.empty:
+        plan_coords = flight_plan_df[['lat', 'lon']].values.tolist()
         folium.PolyLine(
-            pred_coords,
+            plan_coords,
             color='orange',
             weight=2,
             opacity=0.6,
             dash_array='5, 5',
-            popup='Predicted trajectory'
+            popup='Flight plan trajectory'
         ).add_to(m)
 
         # Add waypoints
-        for _, waypoint in predicted_df.iterrows():
+        for _, waypoint in flight_plan_df.iterrows():
             if waypoint['is_ato']:
                 folium.CircleMarker(
                     [waypoint['lat'], waypoint['lon']],
@@ -182,6 +198,23 @@ def create_trajectory_map(actual_df: pd.DataFrame, predicted_df: pd.DataFrame) -
                     fill=True
                 ).add_to(m)
 
+    # Add custom legend
+    legend_html = '''
+    <div style="position: fixed; 
+                top: 10px; right: 10px; width: 220px; height: auto; 
+                background-color: white; z-index: 1000; font-size: 14px;
+                border: 2px solid #333; border-radius: 5px; padding: 12px;
+                box-shadow: 2px 2px 4px rgba(0,0,0,0.3);">
+        <p style="margin: 0 0 8px 0; font-weight: bold; color: #000;">Map Legend</p>
+        <p style="margin: 4px 0; color: #000;"><span style="color: #0000FF; font-weight: bold;">━━━</span> Actual Flight Path</p>
+        <p style="margin: 4px 0; color: #000;"><span style="color: #FFA500; font-weight: bold;">- - -</span> Flight Plan Trajectory</p>
+        <p style="margin: 4px 0; color: #000;"><span style="color: #008000; font-weight: bold; font-size: 16px;">▶</span> Flight Start</p>
+        <p style="margin: 4px 0; color: #000;"><span style="color: #FF0000; font-weight: bold; font-size: 16px;">■</span> Flight End</p>
+        <p style="margin: 4px 0; color: #000;"><span style="color: #FFA500; font-weight: bold; font-size: 16px;">●</span> Active Waypoints</p>
+    </div>
+    '''
+    m.get_root().html.add_child(folium.Element(legend_html))
+
     return m
 
 
@@ -189,6 +222,38 @@ def main():
     """Main dashboard application."""
     st.title("✈️ ATLAS - Air Traffic Visualization Dashboard")
     st.markdown("Visualize and analyze aircraft trajectories from the SCAT dataset")
+    
+    # Add info box about visualization elements
+    with st.expander("ℹ️ Understanding the Visualizations", expanded=False):
+        col1, col2 = st.columns(2)
+        with col1:
+            st.markdown("""
+            **Line Types:**
+            - **Solid lines**: Actual recorded data
+            - **Dashed lines**: Flight plan or secondary data
+            - **Dotted lines**: Rate of change indicators
+            
+            **Colors:**
+            - **Blue**: Actual flight path/altitude
+            - **Orange**: Flight plan trajectory/IAS
+            - **Red**: Vertical rate/end marker
+            - **Green**: Ground speed/start marker
+            - **Purple**: Heading
+            """)
+        with col2:
+            st.markdown("""
+            **Map Elements:**
+            - **Thick blue line**: Actual flight path from radar
+            - **Dashed orange line**: Flight plan route
+            - **Orange circles**: Active waypoints
+            - **Green arrow**: Flight departure point
+            - **Red square**: Flight arrival point
+            
+            **Data Sources:**
+            - Actual data: From ASTERIX CAT062 surveillance
+            - Flight plan data: From filed flight plans
+            """)
+    
 
     # Sidebar
     with st.sidebar:
@@ -234,7 +299,7 @@ def main():
 
     # Extract trajectory data
     actual_df = extract_trajectory_df(flight_data)
-    predicted_df = extract_predicted_trajectory(flight_data)
+    flight_plan_df = extract_flight_plan_trajectory(flight_data)
 
     if actual_df.empty:
         st.error("No trajectory data available for this flight!")
@@ -242,7 +307,7 @@ def main():
 
     # Main content area with tabs
     tab1, tab2, tab3, tab4, tab5 = st.tabs(
-        ["🗺️ Trajectory Map", "📊 Altitude Profile", "🚀 Performance", "📍 Waypoints", "📈 Predictions"]
+        ["🗺️ Trajectory Map", "📊 Altitude Profile", "🚀 Performance", "📍 Waypoints", "📈 Flight Plan Comparison"]
     )
 
     with tab1:
@@ -254,9 +319,22 @@ def main():
             st.metric("Duration", f"{actual_df['time_elapsed'].max():.1f} min")
         with col3:
             st.metric("Max Altitude", f"{actual_df['altitude_ft'].max():,.0f} ft")
+        
+        # Add debug info in expander
+        with st.expander("Debug Info"):
+            st.write(f"Total trajectory points: {len(actual_df)}")
+            st.write(f"Time range: {actual_df['time'].min()} to {actual_df['time'].max()}")
+            
+            # Check for any time intervals < 1 second
+            time_diffs = actual_df['time'].diff().dt.total_seconds()
+            small_intervals = time_diffs[time_diffs < 1.0].dropna()
+            if len(small_intervals) > 0:
+                st.warning(f"Found {len(small_intervals)} time intervals < 1 second")
+            else:
+                st.success("All time intervals >= 1 second")
 
         # Create and display map
-        trajectory_map = create_trajectory_map(actual_df, predicted_df)
+        trajectory_map = create_trajectory_map(actual_df, flight_plan_df)
         st_folium(trajectory_map, width=None, height=600)
 
     with tab2:
@@ -278,8 +356,8 @@ def main():
             x=actual_df['time_elapsed'],
             y=actual_df['rocd'],
             mode='lines',
-            name='Vertical Rate',
-            line=dict(color='red', width=1, dash='dot'),
+            name='Vertical Rate (ft/min)',
+            line=dict(color='red', width=2, dash='dot'),
             yaxis='y2'
         ))
 
@@ -290,10 +368,19 @@ def main():
             yaxis2=dict(
                 title="Vertical Rate (ft/min)",
                 overlaying='y',
-                side='right'
+                side='right',
+                showgrid=False
             ),
             hovermode='x unified',
-            height=500
+            height=500,
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=1.02,
+                xanchor="right",
+                x=1
+            ),
+            showlegend=True
         )
 
         st.plotly_chart(fig, use_container_width=True)
@@ -320,7 +407,7 @@ def main():
             x=actual_df['time_elapsed'],
             y=actual_df['ground_speed_kts'],
             mode='lines',
-            name='Ground Speed',
+            name='Ground Speed (kts)',
             line=dict(color='green', width=2)
         ))
 
@@ -330,8 +417,8 @@ def main():
                 x=actual_df['time_elapsed'],
                 y=actual_df['ias'],
                 mode='lines',
-                name='Indicated Airspeed',
-                line=dict(color='orange', width=2)
+                name='Indicated Airspeed (kts)',
+                line=dict(color='orange', width=2, dash='dash')
             ))
 
         # Heading on secondary axis
@@ -339,8 +426,8 @@ def main():
             x=actual_df['time_elapsed'],
             y=actual_df['heading'],
             mode='lines',
-            name='Heading',
-            line=dict(color='purple', width=1),
+            name='Heading (degrees)',
+            line=dict(color='purple', width=2, dash='dashdot'),
             yaxis='y2'
         ))
 
@@ -352,10 +439,19 @@ def main():
                 title="Heading (degrees)",
                 overlaying='y',
                 side='right',
-                range=[0, 360]
+                range=[0, 360],
+                showgrid=False
             ),
             hovermode='x unified',
-            height=500
+            height=500,
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=1.02,
+                xanchor="right",
+                x=1
+            ),
+            showlegend=True
         )
 
         st.plotly_chart(fig, use_container_width=True)
@@ -378,9 +474,15 @@ def main():
     with tab4:
         st.subheader("Waypoints and Route")
 
-        if not predicted_df.empty:
+        if not flight_plan_df.empty:
             # Filter for active waypoints
-            active_waypoints = predicted_df[predicted_df['is_ato']]
+            active_waypoints = flight_plan_df[flight_plan_df['is_ato']]
+            
+            # Remove duplicates based on time, keeping first occurrence
+            active_waypoints = active_waypoints.drop_duplicates(subset=['time'], keep='first')
+            
+            # Sort by time
+            active_waypoints = active_waypoints.sort_values('time')
 
             # Display waypoints table
             st.dataframe(
@@ -403,10 +505,10 @@ def main():
             st.info("No waypoint data available for this flight")
 
     with tab5:
-        st.subheader("Trajectory Predictions")
+        st.subheader("Flight Plan vs Actual Trajectory")
 
-        # Compare actual vs predicted if we have both
-        if not predicted_df.empty and not actual_df.empty:
+        # Compare actual vs flight plan if we have both
+        if not flight_plan_df.empty and not actual_df.empty:
             # Create comparison visualization
             fig = go.Figure()
 
@@ -415,22 +517,24 @@ def main():
                 lat=actual_df['lat'],
                 lon=actual_df['lon'],
                 mode='lines',
-                name='Actual',
-                line=dict(color='blue', width=3)
+                name='Actual Flight Path',
+                line=dict(color='blue', width=3),
+                showlegend=True
             ))
 
-            # Predicted trajectory
+            # Flight plan trajectory
             fig.add_trace(go.Scattergeo(
-                lat=predicted_df['lat'],
-                lon=predicted_df['lon'],
+                lat=flight_plan_df['lat'],
+                lon=flight_plan_df['lon'],
                 mode='lines+markers',
-                name='Predicted',
+                name='Flight Plan Waypoints',
                 line=dict(color='orange', width=2, dash='dash'),
-                marker=dict(size=6)
+                marker=dict(size=6, symbol='circle'),
+                showlegend=True
             ))
 
             fig.update_layout(
-                title="Actual vs Predicted Trajectory",
+                title="Actual vs Flight Plan Trajectory",
                 geo=dict(
                     projection_type='natural earth',
                     showland=True,
@@ -446,16 +550,26 @@ def main():
                     ),
                     projection_scale=3
                 ),
-                height=600
+                height=600,
+                legend=dict(
+                    orientation="v",
+                    yanchor="top",
+                    y=0.99,
+                    xanchor="left",
+                    x=0.01,
+                    bgcolor="rgba(255, 255, 255, 0.8)",
+                    bordercolor="Black",
+                    borderwidth=1
+                )
             )
 
             st.plotly_chart(fig, use_container_width=True)
 
-            # Calculate prediction accuracy metrics if possible
-            st.subheader("Prediction Analysis")
-            st.info("Prediction accuracy analysis would require matching time points between actual and predicted trajectories")
+            # Calculate flight plan deviation metrics if possible
+            st.subheader("Flight Plan Deviation Analysis")
+            st.info("Flight plan deviation analysis would require matching time points between actual and planned trajectories")
         else:
-            st.info("No prediction data available for comparison")
+            st.info("No flight plan data available for comparison")
 
     # Footer
     st.markdown("---")
