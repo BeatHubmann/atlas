@@ -37,7 +37,7 @@ RUN useradd -m -u 1000 atlas
 RUN chown -R atlas:atlas /app
 
 # Copy dependency files
-COPY --chown=atlas:atlas pyproject.toml uv.lock ./
+COPY --chown=atlas:atlas pyproject.toml uv.lock README.md ./
 
 # Install dependencies with uv as atlas user
 USER atlas
