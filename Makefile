@@ -44,7 +44,7 @@ test:
 
 lint:
 	uv run ruff check src/ tests/
-	uv run mypy src/
+	uv run python -m mypy src/
 
 format:
 	uv run black src/ tests/
