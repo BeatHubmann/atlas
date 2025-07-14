@@ -9,8 +9,9 @@ ATLAS is a trajectory prediction system designed for air traffic control applica
 ### Core Components
 
 - **Prediction Engine**: Multi-model trajectory prediction framework supporting linear extrapolation, Kalman filtering, LSTM networks, and Transformer architectures
-- **Data Processing Pipeline**: High-throughput ingestion and preprocessing of SCAT (Simulated Continuous Air Traffic) datasets
+- **Data Processing Pipeline**: High-throughput ingestion and preprocessing of SCAT (Swedish Civil Air Traffic) datasets with ASTERIX CAT062 format support
 - **API Service**: RESTful interface for real-time prediction requests and system monitoring
+- **Visualization Dashboard**: Interactive Streamlit-based interface for flight trajectory analysis with comprehensive legends and flight plan comparisons
 - **Evaluation Framework**: Comprehensive benchmarking suite for model performance assessment
 - **Monitoring Infrastructure**: Prometheus/Grafana stack for operational metrics and system health monitoring
 
@@ -69,7 +70,12 @@ The multi-platform build uses Docker buildx to create images compatible with bot
 Upon successful deployment, the following services are accessible:
 
 - API Service: `http://localhost:8000`
-- Dashboard Interface: `http://localhost:8501`
+- Dashboard Interface: `http://localhost:8501` - Interactive flight trajectory visualization with:
+  - Real-time flight path rendering with legends
+  - Altitude and performance profiles
+  - Flight plan vs actual trajectory comparison
+  - Waypoint visualization
+  - Debug information for data quality analysis
 - PostgreSQL Database: `localhost:5432`
 - Redis Cache: `localhost:6379`
 - Prometheus Metrics: `http://localhost:9090`
@@ -142,20 +148,24 @@ atlas-train --model lstm --epochs 100 --batch-size 32
 
 ### SCAT Dataset Format
 
-The system processes SCAT (Simulated Continuous Air Traffic) data with the following schema:
-- Aircraft ID
-- Timestamp (UTC)
-- Position (latitude, longitude, altitude)
-- Velocity vectors
-- Flight phase indicators
+The system processes SCAT (Swedish Civil Air Traffic) data with the following schema:
+- Aircraft ID and callsign
+- Timestamp (UTC) with millisecond precision
+- Position (latitude, longitude, altitude) from ASTERIX I062/105
+- Velocity vectors (vx, vy) from ASTERIX I062/185
+- Flight level and vertical rate from ASTERIX I062/136 and I062/220
+- Aircraft derived data (heading, IAS, Mach) from ASTERIX I062/380
+- Flight plan information (departure, destination, route)
+- Predicted trajectory waypoints with estimated times
 
 ### Data Pipeline
 
-1. Raw data ingestion from CSV/Parquet formats
-2. Coordinate transformation to local tangent plane
-3. Trajectory segmentation and filtering
-4. Feature engineering for ML models
-5. Train/validation/test splitting
+1. Raw data ingestion from JSON/CSV/Parquet formats
+2. ASTERIX CAT062 format parsing for surveillance data
+3. Coordinate transformation to local tangent plane
+4. Trajectory segmentation and filtering  
+5. Feature engineering for ML models
+6. Train/validation/test splitting
 
 ## Performance Benchmarks
 
@@ -184,6 +194,28 @@ Logs automatically rotate based on size/age policies defined in Docker daemon co
 
 ### Monitoring Alerts
 Prometheus alerting rules available in `monitoring/alerts/` directory.
+
+## Code Quality Standards
+
+The project enforces strict code quality standards:
+
+- **Formatting**: Black with 88-character line length
+- **Linting**: Ruff with comprehensive rule set including:
+  - pycodestyle (E, W)
+  - pyflakes (F)
+  - isort (I)
+  - flake8-bugbear (B)
+  - flake8-comprehensions (C4, C408)
+  - pyupgrade (UP)
+- **Type Checking**: MyPy with strict mode enabled
+- **Testing**: Pytest with coverage reporting
+
+All code must pass quality checks:
+```bash
+make lint    # Run ruff and mypy
+make format  # Auto-format with black and ruff
+make test    # Run test suite with coverage
+```
 
 ## Contributing
 

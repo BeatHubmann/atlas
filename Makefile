@@ -40,7 +40,7 @@ clean:
 	rm -rf __pycache__ .pytest_cache .coverage htmlcov .mypy_cache .ruff_cache
 
 test:
-	uv run pytest
+	uv run python -m pytest
 
 lint:
 	uv run ruff check src/ tests/

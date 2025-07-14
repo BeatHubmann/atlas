@@ -8,10 +8,10 @@ from typing import Any
 import folium
 import numpy as np
 import pandas as pd
-import plotly.express as px
-import plotly.graph_objects as go
+import plotly.express as px  # type: ignore[import-untyped]
+import plotly.graph_objects as go  # type: ignore[import-untyped]
 import streamlit as st
-from streamlit_folium import st_folium
+from streamlit_folium import st_folium  # type: ignore[import-untyped]
 
 from atlas_atc.config import settings
 from atlas_atc.data.loader import SCATDataLoader
@@ -76,7 +76,7 @@ def extract_trajectory_df(flight_data: dict[str, Any]) -> pd.DataFrame:
                 'ias': 0,
                 'mach': 0,
             }
-            
+
             # Safely extract I062/380 fields
             i062_380 = plot.get('I062/380', {})
             if i062_380:
@@ -92,7 +92,7 @@ def extract_trajectory_df(flight_data: dict[str, Any]) -> pd.DataFrame:
                 subitem27 = i062_380.get('subitem27', {})
                 if isinstance(subitem27, dict):
                     record['mach'] = subitem27.get('mach', 0)
-            
+
             records.append(record)
 
     df = pd.DataFrame(records)
@@ -101,7 +101,7 @@ def extract_trajectory_df(flight_data: dict[str, Any]) -> pd.DataFrame:
         df = df.drop_duplicates(subset=['time'], keep='first')
         # Sort by time to ensure proper ordering
         df = df.sort_values('time').reset_index(drop=True)
-        
+
         df['ground_speed_kts'] = np.sqrt(df['vx']**2 + df['vy']**2) * 1.94384  # m/s to knots
         df['time_elapsed'] = (df['time'] - df['time'].iloc[0]).dt.total_seconds() / 60  # minutes
 
@@ -111,14 +111,14 @@ def extract_trajectory_df(flight_data: dict[str, Any]) -> pd.DataFrame:
 def extract_flight_plan_trajectory(flight_data: dict[str, Any]) -> pd.DataFrame:
     """Extract flight plan trajectory waypoints."""
     pred_traj = flight_data.get('predicted_trajectory', [])
-    
+
     # Use the most recent prediction (last one in the list)
     # as it should have the most up-to-date flight plan
     if not pred_traj:
         return pd.DataFrame()
-    
+
     latest_traj = pred_traj[-1]
-    
+
     records = []
     for waypoint in latest_traj.get('route', []):
         record = {
@@ -137,7 +137,7 @@ def extract_flight_plan_trajectory(flight_data: dict[str, Any]) -> pd.DataFrame:
     if not df.empty:
         # Sort by time to ensure proper ordering
         df = df.sort_values('time').reset_index(drop=True)
-    
+
     return df
 
 
@@ -200,8 +200,8 @@ def create_trajectory_map(actual_df: pd.DataFrame, flight_plan_df: pd.DataFrame)
 
     # Add custom legend
     legend_html = '''
-    <div style="position: fixed; 
-                top: 10px; right: 10px; width: 220px; height: auto; 
+    <div style="position: fixed;
+                top: 10px; right: 10px; width: 220px; height: auto;
                 background-color: white; z-index: 1000; font-size: 14px;
                 border: 2px solid #333; border-radius: 5px; padding: 12px;
                 box-shadow: 2px 2px 4px rgba(0,0,0,0.3);">
@@ -213,16 +213,16 @@ def create_trajectory_map(actual_df: pd.DataFrame, flight_plan_df: pd.DataFrame)
         <p style="margin: 4px 0; color: #000;"><span style="color: #FFA500; font-weight: bold; font-size: 16px;">●</span> Active Waypoints</p>
     </div>
     '''
-    m.get_root().html.add_child(folium.Element(legend_html))
+    m.get_root().html.add_child(folium.Element(legend_html))  # type: ignore[attr-defined]
 
     return m
 
 
-def main():
+def main() -> None:
     """Main dashboard application."""
     st.title("✈️ ATLAS - Air Traffic Visualization Dashboard")
     st.markdown("Visualize and analyze aircraft trajectories from the SCAT dataset")
-    
+
     # Add info box about visualization elements
     with st.expander("ℹ️ Understanding the Visualizations", expanded=False):
         col1, col2 = st.columns(2)
@@ -232,7 +232,7 @@ def main():
             - **Solid lines**: Actual recorded data
             - **Dashed lines**: Flight plan or secondary data
             - **Dotted lines**: Rate of change indicators
-            
+
             **Colors:**
             - **Blue**: Actual flight path/altitude
             - **Orange**: Flight plan trajectory/IAS
@@ -248,12 +248,12 @@ def main():
             - **Orange circles**: Active waypoints
             - **Green arrow**: Flight departure point
             - **Red square**: Flight arrival point
-            
+
             **Data Sources:**
             - Actual data: From ASTERIX CAT062 surveillance
             - Flight plan data: From filed flight plans
             """)
-    
+
 
     # Sidebar
     with st.sidebar:
@@ -319,12 +319,12 @@ def main():
             st.metric("Duration", f"{actual_df['time_elapsed'].max():.1f} min")
         with col3:
             st.metric("Max Altitude", f"{actual_df['altitude_ft'].max():,.0f} ft")
-        
+
         # Add debug info in expander
         with st.expander("Debug Info"):
             st.write(f"Total trajectory points: {len(actual_df)}")
             st.write(f"Time range: {actual_df['time'].min()} to {actual_df['time'].max()}")
-            
+
             # Check for any time intervals < 1 second
             time_diffs = actual_df['time'].diff().dt.total_seconds()
             small_intervals = time_diffs[time_diffs < 1.0].dropna()
@@ -348,7 +348,7 @@ def main():
             y=actual_df['altitude_ft'],
             mode='lines',
             name='Actual Altitude',
-            line=dict(color='blue', width=2)
+            line={'color': 'blue', 'width': 2}
         ))
 
         # Vertical rate on secondary axis
@@ -357,7 +357,7 @@ def main():
             y=actual_df['rocd'],
             mode='lines',
             name='Vertical Rate (ft/min)',
-            line=dict(color='red', width=2, dash='dot'),
+            line={'color': 'red', 'width': 2, 'dash': 'dot'},
             yaxis='y2'
         ))
 
@@ -365,21 +365,21 @@ def main():
             title="Altitude and Vertical Rate Profile",
             xaxis_title="Time Elapsed (minutes)",
             yaxis_title="Altitude (feet)",
-            yaxis2=dict(
-                title="Vertical Rate (ft/min)",
-                overlaying='y',
-                side='right',
-                showgrid=False
-            ),
+            yaxis2={
+                'title': "Vertical Rate (ft/min)",
+                'overlaying': 'y',
+                'side': 'right',
+                'showgrid': False
+            },
             hovermode='x unified',
             height=500,
-            legend=dict(
-                orientation="h",
-                yanchor="bottom",
-                y=1.02,
-                xanchor="right",
-                x=1
-            ),
+            legend={
+                'orientation': "h",
+                'yanchor': "bottom",
+                'y': 1.02,
+                'xanchor': "right",
+                'x': 1
+            },
             showlegend=True
         )
 
@@ -408,7 +408,7 @@ def main():
             y=actual_df['ground_speed_kts'],
             mode='lines',
             name='Ground Speed (kts)',
-            line=dict(color='green', width=2)
+            line={'color': 'green', 'width': 2}
         ))
 
         # IAS if available
@@ -418,7 +418,7 @@ def main():
                 y=actual_df['ias'],
                 mode='lines',
                 name='Indicated Airspeed (kts)',
-                line=dict(color='orange', width=2, dash='dash')
+                line={'color': 'orange', 'width': 2, 'dash': 'dash'}
             ))
 
         # Heading on secondary axis
@@ -427,7 +427,7 @@ def main():
             y=actual_df['heading'],
             mode='lines',
             name='Heading (degrees)',
-            line=dict(color='purple', width=2, dash='dashdot'),
+            line={'color': 'purple', 'width': 2, 'dash': 'dashdot'},
             yaxis='y2'
         ))
 
@@ -435,22 +435,22 @@ def main():
             title="Speed and Heading",
             xaxis_title="Time Elapsed (minutes)",
             yaxis_title="Speed (knots)",
-            yaxis2=dict(
-                title="Heading (degrees)",
-                overlaying='y',
-                side='right',
-                range=[0, 360],
-                showgrid=False
-            ),
+            yaxis2={
+                'title': "Heading (degrees)",
+                'overlaying': 'y',
+                'side': 'right',
+                'range': [0, 360],
+                'showgrid': False
+            },
             hovermode='x unified',
             height=500,
-            legend=dict(
-                orientation="h",
-                yanchor="bottom",
-                y=1.02,
-                xanchor="right",
-                x=1
-            ),
+            legend={
+                'orientation': "h",
+                'yanchor': "bottom",
+                'y': 1.02,
+                'xanchor': "right",
+                'x': 1
+            },
             showlegend=True
         )
 
@@ -477,10 +477,10 @@ def main():
         if not flight_plan_df.empty:
             # Filter for active waypoints
             active_waypoints = flight_plan_df[flight_plan_df['is_ato']]
-            
+
             # Remove duplicates based on time, keeping first occurrence
             active_waypoints = active_waypoints.drop_duplicates(subset=['time'], keep='first')
-            
+
             # Sort by time
             active_waypoints = active_waypoints.sort_values('time')
 
@@ -518,7 +518,7 @@ def main():
                 lon=actual_df['lon'],
                 mode='lines',
                 name='Actual Flight Path',
-                line=dict(color='blue', width=3),
+                line={'color': 'blue', 'width': 3},
                 showlegend=True
             ))
 
@@ -528,39 +528,39 @@ def main():
                 lon=flight_plan_df['lon'],
                 mode='lines+markers',
                 name='Flight Plan Waypoints',
-                line=dict(color='orange', width=2, dash='dash'),
-                marker=dict(size=6, symbol='circle'),
+                line={'color': 'orange', 'width': 2, 'dash': 'dash'},
+                marker={'size': 6, 'symbol': 'circle'},
                 showlegend=True
             ))
 
             fig.update_layout(
                 title="Actual vs Flight Plan Trajectory",
-                geo=dict(
-                    projection_type='natural earth',
-                    showland=True,
-                    landcolor='rgb(243, 243, 243)',
-                    coastlinecolor='rgb(204, 204, 204)',
-                    showlakes=True,
-                    lakecolor='rgb(255, 255, 255)',
-                    showcountries=True,
-                    countrycolor='rgb(204, 204, 204)',
-                    center=dict(
-                        lat=actual_df['lat'].mean(),
-                        lon=actual_df['lon'].mean()
-                    ),
-                    projection_scale=3
-                ),
+                geo={
+                    'projection_type': 'natural earth',
+                    'showland': True,
+                    'landcolor': 'rgb(243, 243, 243)',
+                    'coastlinecolor': 'rgb(204, 204, 204)',
+                    'showlakes': True,
+                    'lakecolor': 'rgb(255, 255, 255)',
+                    'showcountries': True,
+                    'countrycolor': 'rgb(204, 204, 204)',
+                    'center': {
+                        'lat': actual_df['lat'].mean(),
+                        'lon': actual_df['lon'].mean()
+                    },
+                    'projection_scale': 3
+                },
                 height=600,
-                legend=dict(
-                    orientation="v",
-                    yanchor="top",
-                    y=0.99,
-                    xanchor="left",
-                    x=0.01,
-                    bgcolor="rgba(255, 255, 255, 0.8)",
-                    bordercolor="Black",
-                    borderwidth=1
-                )
+                legend={
+                    'orientation': "v",
+                    'yanchor': "top",
+                    'y': 0.99,
+                    'xanchor': "left",
+                    'x': 0.01,
+                    'bgcolor': "rgba(255, 255, 255, 0.8)",
+                    'bordercolor': "Black",
+                    'borderwidth': 1
+                }
             )
 
             st.plotly_chart(fig, use_container_width=True)

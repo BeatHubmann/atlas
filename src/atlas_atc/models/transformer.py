@@ -30,7 +30,7 @@ class PositionalEncoding(nn.Module):
         self.register_buffer("pe", pe)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return x + self.pe[: x.size(0), :]
+        return x + self.pe[: x.size(0), :]  # type: ignore[index]
 
 
 class TransformerNetwork(nn.Module):
