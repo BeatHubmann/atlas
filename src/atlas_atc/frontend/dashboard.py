@@ -380,7 +380,7 @@ def main():
                 title='Planned Altitude at Waypoints',
                 markers=True
             )
-            fig.update_xaxis(tickangle=-45)
+            fig.update_layout(xaxis_tickangle=-45)
             st.plotly_chart(fig, use_container_width=True)
         else:
             st.info("No waypoint data available for this flight")
