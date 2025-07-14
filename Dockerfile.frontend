@@ -1,5 +1,10 @@
-# Dockerfile for ATLAS Frontend
+# Dockerfile for ATLAS Frontend with multi-platform support
 FROM python:3.12-slim
+
+# Build arguments for platform detection
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
+ARG TARGETARCH
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -10,29 +15,34 @@ RUN apt-get update && apt-get install -y \
 # Set working directory
 WORKDIR /app
 
-# Install uv package manager
-RUN curl -LsSf https://astral.sh/uv/install.sh | sh
-ENV PATH="/root/.cargo/bin:${PATH}"
+# Install uv package manager with platform-specific binary
+RUN if [ "$TARGETARCH" = "amd64" ]; then \
+        ARCH="x86_64"; \
+    elif [ "$TARGETARCH" = "arm64" ]; then \
+        ARCH="aarch64"; \
+    else \
+        echo "Unsupported architecture: $TARGETARCH"; exit 1; \
+    fi && \
+    curl -LsSf "https://github.com/astral-sh/uv/releases/latest/download/uv-${ARCH}-unknown-linux-gnu.tar.gz" | tar -xz -C /usr/local/bin/ --strip-components=1 uv-${ARCH}-unknown-linux-gnu/uv && \
+    chmod +x /usr/local/bin/uv
+
+# Create non-root user early
+RUN useradd -m -u 1000 atlas
 
 # Copy dependency files
-COPY pyproject.toml uv.lock ./
+COPY --chown=atlas:atlas pyproject.toml uv.lock ./
 
-# Install dependencies with uv (including frontend extras)
+# Install dependencies with uv as atlas user (including frontend extras)
+USER atlas
 RUN uv sync --frozen --no-cache --extra frontend
 
 # Copy application code
-COPY src/ ./src/
-COPY results/ ./results/
+COPY --chown=atlas:atlas src/ ./src/
+COPY --chown=atlas:atlas results/ ./results/
 
-# Set Python path
+# Set environment variables
 ENV PYTHONPATH=/app
-
-# Create non-root user
-RUN useradd -m -u 1000 atlas && \
-    chown -R atlas:atlas /app
-
-# Switch to non-root user
-USER atlas
+ENV PATH="/app/.venv/bin:${PATH}"
 
 # Expose Streamlit port
 EXPOSE 8501
@@ -42,4 +52,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD curl -f http://localhost:8501/_stcore/health || exit 1
 
 # Run the Streamlit dashboard
-CMD ["uv", "run", "streamlit", "run", "src/atlas_atc/frontend/dashboard.py", "--server.port=8501", "--server.address=0.0.0.0"]
+CMD ["streamlit", "run", "src/atlas_atc/frontend/dashboard.py", "--server.port=8501", "--server.address=0.0.0.0"]

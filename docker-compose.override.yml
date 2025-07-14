@@ -1,18 +1,30 @@
-# Development overrides for docker-compose
-# This file is automatically loaded by docker-compose
+# docker-compose.override.yml - Local development overrides
+# This file is automatically loaded by docker-compose and overrides settings in docker-compose.yml
+
 version: '3.8'
 
 services:
+  # For local development, we don't need to specify platforms
+  # Docker will automatically use the current platform
   atlas-api:
-    environment:
-      - LOG_LEVEL=DEBUG
-      - RELOAD=true
+    build:
+      context: .
+      dockerfile: Dockerfile
+      # Remove platforms specification for local builds
+      # platforms setting is inherited from docker-compose.yml but can be overridden
+    # Mount source code for hot reloading during development
     volumes:
-      - ./src:/app/src  # Mount source code for hot reload
-    command: ["uv", "run", "uvicorn", "atlas_atc.api.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+      - ./src:/app/src:ro
+      - ./data:/app/data
+      - ./models:/app/models
+      - ./results:/app/results
+    # Enable hot reloading
+    command: ["uvicorn", "atlas_atc.api.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
 
   atlas-dashboard:
-    environment:
-      - STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
     volumes:
-      - ./src:/app/src  # Mount source code for hot reload
+      - ./src:/app/src:ro
+      - ./results:/app/results

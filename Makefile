@@ -2,21 +2,29 @@
 
 help:
 	@echo "ATLAS Development Commands:"
-	@echo "  make setup    - Initial setup of the infrastructure"
-	@echo "  make build    - Build Docker images"
-	@echo "  make up       - Start all services"
-	@echo "  make down     - Stop all services"
-	@echo "  make logs     - View logs from all services"
-	@echo "  make clean    - Clean up volumes and containers"
-	@echo "  make test     - Run tests"
-	@echo "  make lint     - Run linting"
-	@echo "  make format   - Format code"
+	@echo "  make setup                  - Initial setup of the infrastructure"
+	@echo "  make build                  - Build Docker images (local platform)"
+	@echo "  make build-multiplatform    - Build for ARM64 & AMD64 platforms"
+	@echo "  make build-multiplatform-push - Build and push multi-platform images"
+	@echo "  make up                     - Start all services"
+	@echo "  make down                   - Stop all services"
+	@echo "  make logs                   - View logs from all services"
+	@echo "  make clean                  - Clean up volumes and containers"
+	@echo "  make test                   - Run tests"
+	@echo "  make lint                   - Run linting"
+	@echo "  make format                 - Format code"
 
 setup:
 	@bash scripts/setup.sh
 
 build:
 	docker compose build
+
+build-multiplatform:
+	@bash scripts/build-multiplatform.sh
+
+build-multiplatform-push:
+	@bash scripts/build-multiplatform.sh --push
 
 up:
 	docker compose up -d

@@ -1,5 +1,10 @@
-# Dockerfile for ATLAS API
+# Dockerfile for ATLAS API with multi-platform support
 FROM python:3.12-slim
+
+# Build arguments for platform detection
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
+ARG TARGETARCH
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -13,31 +18,37 @@ RUN apt-get update && apt-get install -y \
 # Set working directory
 WORKDIR /app
 
-# Install uv package manager
-RUN curl -LsSf https://astral.sh/uv/install.sh | sh
-ENV PATH="/root/.cargo/bin:${PATH}"
+# Install uv package manager with platform-specific binary
+# UV provides direct download URLs for different platforms
+RUN if [ "$TARGETARCH" = "amd64" ]; then \
+        ARCH="x86_64"; \
+    elif [ "$TARGETARCH" = "arm64" ]; then \
+        ARCH="aarch64"; \
+    else \
+        echo "Unsupported architecture: $TARGETARCH"; exit 1; \
+    fi && \
+    curl -LsSf "https://github.com/astral-sh/uv/releases/latest/download/uv-${ARCH}-unknown-linux-gnu.tar.gz" | tar -xz -C /usr/local/bin/ --strip-components=1 uv-${ARCH}-unknown-linux-gnu/uv && \
+    chmod +x /usr/local/bin/uv
+
+# Create non-root user early
+RUN useradd -m -u 1000 atlas
 
 # Copy dependency files
-COPY pyproject.toml uv.lock ./
+COPY --chown=atlas:atlas pyproject.toml uv.lock ./
 
-# Install dependencies with uv
+# Install dependencies with uv as atlas user
+USER atlas
 RUN uv sync --frozen --no-cache
 
 # Copy application code
-COPY src/ ./src/
-COPY data/ ./data/
-COPY models/ ./models/
-COPY results/ ./results/
+COPY --chown=atlas:atlas src/ ./src/
+COPY --chown=atlas:atlas data/ ./data/
+COPY --chown=atlas:atlas models/ ./models/
+COPY --chown=atlas:atlas results/ ./results/
 
-# Set Python path
+# Set environment variables
 ENV PYTHONPATH=/app
-
-# Create non-root user
-RUN useradd -m -u 1000 atlas && \
-    chown -R atlas:atlas /app
-
-# Switch to non-root user
-USER atlas
+ENV PATH="/app/.venv/bin:${PATH}"
 
 # Expose API port
 EXPOSE 8000
@@ -47,4 +58,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
 # Run the API server
-CMD ["uv", "run", "atlas-server"]
+CMD ["uvicorn", "atlas_atc.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
