@@ -29,6 +29,9 @@ RUN if [ "$TARGETARCH" = "amd64" ]; then \
 # Create non-root user early
 RUN useradd -m -u 1000 atlas
 
+# Change ownership of the app directory to atlas user
+RUN chown -R atlas:atlas /app
+
 # Copy dependency files
 COPY --chown=atlas:atlas pyproject.toml uv.lock ./
 
