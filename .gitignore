@@ -60,6 +60,7 @@ dmypy.json
 .ipynb_checkpoints/
 
 # Data
+data/scat/**/*.json
 data/scat/*.csv
 data/scat/*.parquet
 data/processed/

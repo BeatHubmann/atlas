@@ -61,7 +61,7 @@ class TrajectoryBenchmark:
         print("Loading and preprocessing SCAT dataset...")
 
         # Load trajectory data
-        trajectories = self.data_loader.load_trajectories()
+        trajectories, metadata = self.data_loader.load_trajectories(max_files=100)  # Start with 100 files for testing
 
         # Create sequences for training
         X, y = self.data_loader.create_sequences(
