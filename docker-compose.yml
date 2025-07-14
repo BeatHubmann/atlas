@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  # Main API service
+  atlas-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      platforms:
+        - linux/arm64  # Native Apple Silicon
+        - linux/amd64  # x86 compatibility
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONPATH=/app
+      - DATABASE_URL=postgresql://atlas:atlas_password@postgres:5432/atlas_atc
+      - REDIS_URL=redis://redis:6379
+      - DEVICE=cpu  # Use CPU in container
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./data:/app/data
+      - ./models:/app/models
+      - ./results:/app/results
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 8G
+        reservations:
+          memory: 4G
+
+  # Streamlit dashboard
+  atlas-dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+      platforms:
+        - linux/arm64
+        - linux/amd64
+    ports:
+      - "8501:8501"
+    environment:
+      - API_URL=http://atlas-api:8000
+      - PYTHONPATH=/app
+    depends_on:
+      - atlas-api
+    volumes:
+      - ./results:/app/results
+    restart: unless-stopped
