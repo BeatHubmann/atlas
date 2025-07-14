@@ -1,12 +1,16 @@
 """General utilities for ATLAS."""
 
 import logging
-import time
-import numpy as np
 import random
+import time
+from collections.abc import Iterator
+from typing import Any, TypeVar
+
+import numpy as np
 import torch
 
-def setup_logger(name="atlas", level="INFO"):
+
+def setup_logger(name: str = "atlas", level: str = "INFO") -> logging.Logger:
     """Configure and return a logger."""
     logger = logging.getLogger(name)
     if not logger.handlers:
@@ -17,7 +21,7 @@ def setup_logger(name="atlas", level="INFO"):
     logger.setLevel(level)
     return logger
 
-def set_seed(seed: int = 42):
+def set_seed(seed: int = 42) -> None:
     """Set random seed for reproducibility."""
     np.random.seed(seed)
     random.seed(seed)
@@ -30,18 +34,20 @@ def set_seed(seed: int = 42):
 
 class Timer:
     """Simple context manager for timing code blocks."""
-    def __init__(self, desc="Elapsed"):
+    def __init__(self, desc: str = "Elapsed") -> None:
         self.desc = desc
-    def __enter__(self):
+    def __enter__(self) -> "Timer":
         self.start = time.time()
         return self
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
         elapsed = time.time() - self.start
         print(f"{self.desc}: {elapsed:.3f}s")
 
-def batch_iterable(iterable, batch_size):
+T = TypeVar('T')
+
+def batch_iterable(iterable: Any, batch_size: int) -> Iterator[Any]:
     """Yield successive batches from an iterable."""
-    l = len(iterable)
-    for ndx in range(0, l, batch_size):
-        yield iterable[ndx:min(ndx + batch_size, l)]
+    length = len(iterable)
+    for ndx in range(0, length, batch_size):
+        yield iterable[ndx:min(ndx + batch_size, length)]
 

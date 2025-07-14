@@ -59,13 +59,13 @@ class LinearExtrapolationPredictor(TrajectoryPredictor):
 
         # Generate predictions
         prediction_times = np.arange(1, horizon_minutes + 1) * 60  # Convert to seconds
-        predictions = []
+        predictions_list = []
 
         for t in prediction_times:
             pred_pos = last_pos + velocity * t
-            predictions.append(pred_pos)
+            predictions_list.append(pred_pos)
 
-        predictions = np.stack(predictions, axis=1)  # [batch_size, horizon, 3]
+        predictions = np.stack(predictions_list, axis=1)  # [batch_size, horizon, 3]
 
         computation_time = time.time() - start_time
 

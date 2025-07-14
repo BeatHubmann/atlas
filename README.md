@@ -18,10 +18,13 @@ ATLAS is a trajectory prediction system designed for air traffic control applica
 
 - **Runtime Environment**: Python 3.12+
 - **Container Platform**: Docker with multi-architecture support (ARM64/AMD64)
+  - Docker buildx for cross-platform builds
+  - Supports both Apple Silicon and x86_64 architectures
 - **Database Systems**: PostgreSQL 16 (primary storage), Redis 7 (caching layer)
 - **ML Frameworks**: PyTorch 2.7+, Transformers 4.35+
 - **API Framework**: FastAPI with async/await support
 - **Package Management**: UV for deterministic dependency resolution
+- **Code Quality Tools**: Black (formatting), Ruff (linting), MyPy (type checking)
 
 ## Deployment Procedures
 
@@ -51,6 +54,16 @@ This process will:
 - Deploy service stack
 - Verify system health
 
+### Docker Build Options
+
+```bash
+make build                      # Build for local platform only
+make build-multiplatform        # Build for ARM64 & AMD64 platforms
+make build-multiplatform-push   # Build and push multi-platform images to registry
+```
+
+The multi-platform build uses Docker buildx to create images compatible with both Apple Silicon (ARM64) and x86_64 (AMD64) architectures.
+
 ### Service Endpoints
 
 Upon successful deployment, the following services are accessible:
@@ -60,7 +73,12 @@ Upon successful deployment, the following services are accessible:
 - PostgreSQL Database: `localhost:5432`
 - Redis Cache: `localhost:6379`
 - Prometheus Metrics: `http://localhost:9090`
-- Grafana Dashboards: `http://localhost:3000`
+- Grafana Dashboards: `http://localhost:3000` (default login: admin/admin)
+
+### Container Resource Limits
+
+- **API Service**: 8GB memory limit, 4GB reserved
+- **All services**: Configured with health checks and auto-restart policies
 
 ## Operational Commands
 
@@ -74,9 +92,27 @@ make clean     # Remove all containers and volumes
 
 ### Development Operations
 ```bash
-make test      # Execute test suite
-make lint      # Run code quality checks
-make format    # Apply code formatting standards
+make test      # Execute test suite with pytest
+make lint      # Run ruff and mypy checks
+make format    # Apply black and ruff formatting
+```
+
+### Development Mode
+```bash
+make dev-api       # Run API server in development mode with hot reload
+make dev-dashboard # Run Streamlit dashboard in development mode
+```
+
+### Database Access
+```bash
+make db-shell   # Access PostgreSQL shell
+make redis-cli  # Access Redis CLI
+```
+
+### Monitoring Access
+```bash
+make prometheus # Open Prometheus UI (http://localhost:9090)
+make grafana    # Open Grafana dashboards (http://localhost:3000)
 ```
 
 ## Model Implementations

@@ -211,7 +211,7 @@ class TransformerPredictor(TorchTrajectoryPredictor):
         )
 
         # Learning rate scheduler (Transformer-style warmup)
-        def lr_lambda(step):
+        def lr_lambda(step: int) -> float:
             # Avoid division by zero at step 0
             step = max(1, step)
             if step < warmup_steps:

@@ -80,7 +80,7 @@ class KalmanFilterPredictor(TrajectoryPredictor):
         start_time = time.time()
 
         batch_size = X.shape[0]
-        predictions = []
+        predictions_list: list[np.ndarray] = []
 
         H = self._create_observation_matrix()
 
@@ -123,9 +123,9 @@ class KalmanFilterPredictor(TrajectoryPredictor):
                 pred_pos = future_state[:3]  # Extract position
                 pred_positions.append(pred_pos)
 
-            predictions.append(np.array(pred_positions))
+            predictions_list.append(np.array(pred_positions))
 
-        predictions = np.array(predictions)  # [batch_size, horizon, 3]
+        predictions = np.array(predictions_list)  # [batch_size, horizon, 3]
 
         computation_time = time.time() - start_time
 
