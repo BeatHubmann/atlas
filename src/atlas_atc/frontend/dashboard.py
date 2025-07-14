@@ -72,10 +72,27 @@ def extract_trajectory_df(flight_data: dict[str, Any]) -> pd.DataFrame:
                 'vx': plot.get('I062/185', {}).get('vx', 0),
                 'vy': plot.get('I062/185', {}).get('vy', 0),
                 'rocd': plot.get('I062/220', {}).get('rocd', 0),
-                'heading': plot.get('I062/380', {}).get('subitem3', {}).get('mag_hdg', 0) if isinstance(plot.get('I062/380', {}).get('subitem3', {}), dict) else 0,
-                'ias': plot.get('I062/380', {}).get('subitem26', {}).get('ias', 0),
-                'mach': plot.get('I062/380', {}).get('subitem27', {}).get('mach', 0),
+                'heading': 0,
+                'ias': 0,
+                'mach': 0,
             }
+            
+            # Safely extract I062/380 fields
+            i062_380 = plot.get('I062/380', {})
+            if i062_380:
+                # Heading
+                subitem3 = i062_380.get('subitem3', {})
+                if isinstance(subitem3, dict):
+                    record['heading'] = subitem3.get('mag_hdg', 0)
+                # IAS
+                subitem26 = i062_380.get('subitem26', {})
+                if isinstance(subitem26, dict):
+                    record['ias'] = subitem26.get('ias', 0)
+                # Mach
+                subitem27 = i062_380.get('subitem27', {})
+                if isinstance(subitem27, dict):
+                    record['mach'] = subitem27.get('mach', 0)
+            
             records.append(record)
 
     df = pd.DataFrame(records)
