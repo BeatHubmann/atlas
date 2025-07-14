@@ -1,0 +1,67 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Development
+.git/
+.gitignore
+.github/
+*.md
+!README.md
+!CLAUDE.md
+.pre-commit-config.yaml
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+*.egg
+
+# Notebooks
+*.ipynb_checkpoints
+*.ipynb
+
+# Tests
+tests/
+test_*.py
+
+# Documentation
+docs/
+*.rst
+
+# Large files that should be mounted
+data/scat/*.csv
+models/checkpoints/*.pt
+models/checkpoints/*.pth
+results/experiments/*.json
+results/experiments/*.png
