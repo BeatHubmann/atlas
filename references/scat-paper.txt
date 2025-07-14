@@ -1,0 +1,1156 @@
+Data in Brief 48 (2023) 109240
+
+Contents lists available at ScienceDirect
+
+Data in Brief
+journal homepage: www.elsevier.com/locate/dib
+
+Data Article
+
+Swedish civil air traﬃc control dataset
+Jens Nilsson a,∗, Jonas Unger b
+a
+
+Linköping University, Department of Science and Technology, Linköping, 581 83, Sweden and LFV, Technical
+Department, Norrköping, 601 79, Sweden
+Linköping University, Department of Science and Technology, Linköping, 581 83, Sweden
+
+b
+
+a r t i c l e
+
+i n f o
+
+Article history:
+Received 26 October 2022
+Revised 16 March 2023
+Accepted 10 May 2023
+Available online 16 May 2023
+Dataset link: SCAT dataset (Original data)
+Keywords:
+Air transport
+Flight tracks
+Airspace data
+GRIB weather data
+
+∗
+
+a b s t r a c t
+The Swedish Civil Air Traﬃc Control (SCAT) dataset consists
+of 13 weeks of data collected from the area control in Sweden ﬂight information region. The dataset consists of detailed
+data from almost 170,0 0 0 ﬂights as well as airspace data and
+weather forecasts. The ﬂight data includes system updated
+ﬂight plans, clearances from air traﬃc control, surveillance
+data and trajectory prediction data. Each week of data is continuous but the 13 weeks are spread over one year to provide variations in weather and seasonal traﬃc patterns. The
+dataset does only include scheduled ﬂights not involved in
+any incident reports. Sensitive data such as military and private ﬂight has been removed.
+The SCAT dataset can be useful for any research related to
+air traﬃc control, e.g. analysis of transportation patterns, environmental impact, optimization and automation/AI.
+© 2023 The Author(s). Published by Elsevier Inc.
+This is an open access article under the CC BY license
+(http://creativecommons.org/licenses/by/4.0/)
+
+Corresponding author.
+E-mail address: jens.nilsson@liu.se (J. Nilsson).
+
+https://doi.org/10.1016/j.dib.2023.109240
+2352-3409/© 2023 The Author(s). Published by Elsevier Inc. This is an open access article under the CC BY license
+(http://creativecommons.org/licenses/by/4.0/)
+
+2
+
+J. Nilsson and J. Unger / Data in Brief 48 (2023) 109240
+
+Speciﬁcations Table
+Subject
+Speciﬁc subject area
+Type of data
+How the data were acquired
+Data format
+Description of data collection
+
+Data source location
+
+Engineering: Aerospace Engineering
+The dataset consists of detailed data of almost 170,0 0 0 ﬂights, weather
+forecasts and airspace data from the Swedish air traﬃc control system.
+JSON ﬁles
+Tables (for the data format speciﬁcation)
+The data was acquired by extracting information from the Swedish air traﬃc
+control systems.
+Transformed
+Filtered
+The dataset includes surveillance data, air traﬃc controller input, ﬂight
+planning, trajectory prediction, airspace and weather data from Swedish area
+control.
+Institution: LFV (Swedish air navigation service provider)
+Country: Sweden (Swedish Flight Information Region)All the data in this
+dataset originates from data recorded by the TopSky air traﬃc control system
+[1], however some of the data in TopSky originates from other sources:
+• Surveillance data originates from the ARTAS system [2] which is a
+multi-sensor tracker, which gets its data from radar stations and wide area
+multilateration sensors in Sweden.
+• Weather forecasts originates from the world meteorological organization
+[3] in London.
+• Flight planning data originates from the ﬂight plans submitted by
+pilots/airline operators in their respective countries, sent via the
+aeronautical networks AFTN/AMHS to TopSky. Flight plan updates are also
+sent from neighboring ﬂight information regions using the OLDI protocol.
+• Airspace data mostly originates from Aeronautical Information Publications
+(AIP) made in relevant countries, but alterations and addition may be done
+to adapt the information to TopSky.
+
+Data accessibility
+
+Data that originates from these other systems may have been modiﬁed by
+TopSky before being recorded.
+Repository name: Mendeley data
+Data identiﬁcation number: DOI: 10.17632/8yn985bwz5.1
+Direct URL to data: https://data.mendeley.com/datasets/8yn985bwz5
+
+Value of the Data
+• A key challenge in the research of air traﬃc control is that there is a lack of publicly available
+data [4,5]. The main reasons is that data in this domain in many cases is classiﬁed and/or rely
+on proprietary software systems and data formats.
+• This dataset is unique in its kind. Other publicly available sources of air traﬃc related data
+exists, e.g. OpenSky Network [6] and ADS-B Exchange [7], however these sources are limited
+to ADS-B data and are as such lacking the comprehensive coverage of the full information
+related to each ﬂight as presented in the this data set.
+• This dataset can be useful for any research related to air traﬃc and air traﬃc control, e.g.
+automation and support tools for air traﬃc control, environmental research and airspace optimization.
+
+1. Objective
+There is currently a lack of high-quality open datasets for research around air traﬃc control
+and air transportation. The main objective behind the SCAT dataset [8] is to enable in-depth
+analysis and research in the context of aviation. We foresee that SCAT can be used in the research and development of future AI and machine learning based tools for air traﬃc control.
+
+J. Nilsson and J. Unger / Data in Brief 48 (2023) 109240
+
+3
+
+2. Data Description
+The Swedish Civil Air Traﬃc Control (SCAT) dataset [8] contains detailed data of almost
+170,0 0 0 ﬂights, weather forecasts and airspace data from a perspective of air traﬃc control. The
+data originates from the air traﬃc control systems at the two control centers, Malmö (ESMM)
+and Stockholm (ESOS), which provide upper area control in the Swedish ﬂight information region (FIR). The data is organized in 13 compressed archives in ZIP format, each containing one
+week of continuous data, see Table 1. The data has been ﬁltered and processed as described in
+the “Experimental design, materials and methods” section.
+All ﬁles inside the archives are in the JavaScript Object Notation (JSON) format [9]. Time
+stamps are in UTC time and represented as strings in ISO 8601 format without explicit time zone
+(e.g. 2017-06-06T13:45:10.362). Properties without values may be null or left out, depending on
+the source for the data. To reduce the number of tables needed to document each object type,
+several object types may be represented in one table. In such case indentation and the sign • is
+used in front of the property name to indicate that it is a property of the object at the previous
+indentation level.
+Each archive contains several ﬂight ﬁles, which are ﬁles named with the unique id number
+given to the ﬂight during data extraction, e.g. 101234.json. Each ﬁle holds all the data related to
+a single ﬂight such as:
+• The sequence of control centers controlling the ﬂight.
+• Data related to ﬂight planning, coordination and clearances from the air traﬃc controllers.
+• Surveillance data from the system tracker which process’ the information from multiple radar
+and wide area multilateration sources into a single traﬃc view.
+• Data from the trajectory prediction subsystem in TopSky which repeatedly makes updated
+predictions of the future ﬂight trajectory.
+The format of the top level object in the ﬂight ﬁles is described in Table 2 and its contained
+types are described in Tables 3-11. Fig. 1 shows three example visualizations where the trajectories of ﬂights in Swedish airspace from different dates are illustrated.
+In each archive there is also one ﬁle named airspace.json that contains coordinates for all
+named points as well as all the extents of the control sectors for each of the centers. The format
+of the airspace ﬁle is described in Table 12. The airspace is valid for the entire week of data
+since the dates was chosen such that there were no conﬁguration changes.
+Finally, each archive contains one ﬁle named grib_meteo.json. The contents in this ﬁle are
+wind and temperature predictions used by the air traﬃc control system. This data originates
+from World Meteorological Organization (WMO) in London. Predictions are made every third
+
+Table 1
+The ﬁles and data periods in the SCAT dataset.
+File name
+
+Start date
+
+End date
+
+Number of ﬂights
+
+scat20161015_20161021.zip
+scat20161112_20161118.zip
+scat20161210_20161216.zip
+scat20170107_20170113.zip
+scat20170215_20170221.zip
+scat20170304_20170310.zip
+scat20170401_20170407.zip
+scat20170429_20170505.zip
+scat20170527_20170602.zip
+scat20170624_20170630.zip
+scat20170722_20170728.zip
+scat20170819_20170825.zip
+scat20170916_20170922.zip
+
+2016-10-15
+2016-11-12
+2016-12-10
+2017-01-07
+2017-02-15
+2017-03-04
+2017-04-01
+2017-04-29
+2017-05-27
+2017-06-24
+2017-07-22
+2017-08-19
+2017-09-16
+
+2016-10-21
+2016-11-18
+2016-12-16
+2017-01-13
+2017-02-21
+2017-03-10
+2017-04-07
+2017-05-05
+2017-06-02
+2017-06-30
+2017-07-28
+2017-08-25
+2017-09-22
+Total ﬂights
+
+13,138
+12,248
+12,099
+11,195
+11,610
+12,265
+13,255
+12,855
+13,832
+13,772
+12,950
+13,963
+14,365
+167,547
+
+4
+
+J. Nilsson and J. Unger / Data in Brief 48 (2023) 109240
+
+Table 2
+The top properties of a Flight object.
+property name
+
+type
+
+description
+
+center_ctrl
+• center_id
+
+[object]
+number
+
+array of control center objects sorted by start_time.
+the control center unique id:
+1 = esmm
+2 = esos
+The time when the control centers is deemed the most
+relevant data source for the current ﬂight.
+Flight plan related information, see Table 3.
+Integral number with the ﬂights unique id (corresponds to the
+ﬁle name).
+Array of plots from surveillance system, see Table 10.
+Trajectory predictions from air traﬃc control system, see
+Table 11
+
+• start_time
+
+string
+
+Fpl
+Id
+
+object
+number
+
+Plots
+predicted_trajectory
+
+[object]
+[object]
+
+Table 3
+The properties of the ﬂight plan object.
+Property name
+
+Type
+
+Description
+
+fpl_arr
+
+[object]
+
+fpl_base
+
+[object]
+
+fpl_clearance
+fpl_dep
+
+[object]
+[object]
+
+fpl_holding
+fpl_plan_update
+
+[object]
+[object]
+
+Array of ﬂight arrival information sorted by time_stamp, see
+Table 4.
+Array of basic ﬂight plan information sorted by time_stamp, see
+Table 5.
+Array of given clearances sorted by time_stamp, see Table 6.
+Array of ﬂight departure information sorted by time_stamp, see
+Table 7.
+Array of holding information sorted by time_stamp, see Table 8.
+Array of ﬂight plan updates sorted by time_stamp, see Table 9.
+
+Table 4
+The properties of ﬂight plan arrival objects.
+Property name
+
+Type
+
+Description
+
+approach_clearance
+
+bool
+
+arrival_runway
+Ata
+missed_approach_ﬂag
+Star
+time_stamp
+
+string
+string
+bool
+string
+string
+
+True if the aircraft has been cleared for approach, false
+otherwise.
+Name of the runway the aircraft will land on.
+Actual time of arrival.
+Set to true if a missed approach has occurred.
+Name of the assigned STAR (Standard arrival route) if any.
+Time stamp of when the information was updated.
+
+Table 5
+The properties of a basic ﬂight plan information object.
+Property name
+
+Type
+
+Description
+
+Adar
+
+string
+
+Adep
+Ades
+aircraft_type
+Callsign
+equip_status_rvsm
+
+string
+string
+string
+string
+bool
+
+ﬂight_rules
+time_stamp
+Wtc
+
+string
+string
+string
+
+Actual destination aerodrome if different from ades (ICAO
+code).
+Departure aerodrome (ICAO code).
+Destination aerodrome (ICAO code).
+Aircraft type (ICAO code).
+Aircraft callsign (ICAO code).
+True if aircraft is equipped to ﬂy in RVSM (Reduced Vertical
+Separation Minima) airspace.
+Flight rules from the ﬁled ﬂight plan item 8.
+Time stamp when the information was updated.
+Wake turbulence category from the ﬁled ﬂight plan item 9.
+
+J. Nilsson and J. Unger / Data in Brief 48 (2023) 109240
+
+5
+
+Table 6
+The properties of a ﬂight plan clearances object.
+Property name
+
+Type
+
+Description
+
+assign_heading_beacon
+
+string
+
+assigned_heading_val
+assigned_speed_unit
+
+number
+string
+
+assigned_speed_val
+
+number
+
+Cﬂ
+
+number
+
+cﬂ_unit
+
+string
+
+time_stamp
+
+string
+
+If the aircraft is assigned a heading towards a beacon or
+navigation point, this ﬁeld is set to the name of that point
+otherwise it is null.
+Assigned heading in degrees or null if no heading is assigned.
+Unit of the assigned speed:
+“KNOT’’ = nautical miles per hour
+“MACH’’ = mach number
+“KMHOUR’’ = kilometers per hour
+or null if no speed is assigned.
+Assigned speed value, with unit according to the ﬁeld
+assigned_speed_unit, or null if no speed is assigned.
+Cleared ﬂight level/altitude as speciﬁed in cﬂ_unit or null if
+lacking clearance.
+The unit of the cleared ﬂight level:
+“A’’ = altitude in feet
+“F’’ = ﬂight level.
+Time stamp when the information was updated.
+
+Table 7
+The properties of a ﬂight plan clearances object.
+Property name
+
+Type
+
+Description
+
+Atd
+departure_runway
+Iobt
+Sid
+time_stamp
+
+string
+string
+string
+string
+string
+
+Actual time of departure.
+Departure runway.
+Initial of block time.
+Standard Instrument Departure Route.
+Time stamp when the information was updated.
+
+Table 8
+The properties of a ﬂight plan holding object.
+Property name
+
+Type
+
+Description
+
+hold_stack_vol_name
+holding_entry_time
+holding_leaving_time
+holding_stack_status_id
+
+string
+string
+string
+string
+
+holding_status_id
+
+string
+
+time_stamp
+
+string
+
+Name of the holding if applicable.
+Estimated time when entering holding.
+Estimated time when entering holding.
+Holding stack status, either:
+“APPROACHING HOLD’’
+“HOLD’’
+“LEAVING HOLD’’
+“NO HOLD’’
+Holding status, either:
+“HOLD ON FIX’’
+“HOLD ON POSITION’’
+“NO HOLD’’
+“INIT HOLD’’
+“HOLD ON VOLUME’’
+Time stamp when the information was updated.
+
+hour for each cell in the grid. Each cell is 1.25° in size in both latitude and longitude direction
+and divided into 13 height bands from ﬂight level 50 (50 0 0 ft) to ﬂight level 530 (53,0 0 0 ft),
+see Table 13. The data is in the form of an array sorted by time, longitude, latitude and altitude.
+Example of code to use this dataset is made available on GitHub [10]. At the time of writing
+there are three examples, one tool to index the ﬂights contained in each zip archive and two
+tools to convert the data into Keyhole Markup Language (KML) for visualization.
+
+6
+
+J. Nilsson and J. Unger / Data in Brief 48 (2023) 109240
+
+Table 9
+The properties of a ﬂight plan update object.
+Property name
+
+Type
+
+Description
+
+copn
+copn_pel
+copn_pel_unit
+
+string
+number
+string
+
+copx
+copx_pel
+copx_pel_unit
+
+string
+number
+string
+
+icao_route
+rﬂ_string
+
+string
+string
+
+tas_string
+
+string
+
+time_stamp
+
+string
+
+Coordination entry point name.
+Planed entry level at the point speciﬁed in copn.
+The unit of altitude at the copn_pel:
+“A’’ = altitude in feet
+“F’’ = ﬂight level in 100 feet
+Coordination exit point name.
+Planed exit level at the point speciﬁed in copx.
+The unit of altitude at the copx_pel
+“A’’ = altitude in feet
+“F’’ = ﬂight level in 100 feet
+Current route according to format in ICAO ﬂight plan item 15.
+Requested ﬂight level according to format in ICAO ﬂight plan
+item 15.
+Requested speed according to format in ICAO ﬂight plan item
+15.
+Time stamp when the information was updated.
+
+Table 10
+The properties of a plot object. This data is converted from Asterix cat 62 [11], and the property names corresponds to
+the name in the Asterix speciﬁcation.
+Property name
+
+Type
+
+Description
+
+time_of_track
+I062/105
+• lat
+
+string
+object
+number
+
+Time stamp plot was updated.
+Calculated WGS-84 track position.
+Latitude in WGS-84 coordinates.
+
+number
+
+Longitude in WGS-84 coordinates.
+
+I062/136
+• measured_ﬂight_level
+
+object
+string
+
+Measured ﬂight level.
+Altitude at standard air pressure in units of 100 feet.
+
+I062/185
+• vx
+
+object
+number
+
+Calculated Cartesian track velocity.
+Speed in m/s (positive is geographical east).
+
+• vy
+
+number
+
+Speed in m/s (positive is geographical north).
+
+I062/200
+• adf
+
+object
+bool
+
+Mode of movement.
+Altitude discrepancy, true if discrepancy is detected.
+
+• long
+
+number
+
+• trans
+
+number
+
+• vert
+
+number
+
+I062/220
+• rocd
+
+object
+number
+
+Longitudinal ground speed acceleration: 0 = Constant,
+1 = Increasing, 2 = Decreasing, 3 = Undetermined.
+Transversal acceleration: 0 = Constant course,
+1 = Right turn, 2 = Left turn, 3 = Undetermined.
+Vertical rate: 0 = Level, 1 = Climb, 2 = Descent,
+3 = Undetermined.
+Calculated rate of climb/descent.
+Vertical in feet/minute (negative values are descent).
+
+I062/380
+• subitem3
+
+object
+object
+
+Aircraft derived data.
+Magnetic heading.
+
+• ag_hdg
+
+number
+
+Magnetic heading in degrees.
+
+• subitem6
+
+object
+
+• altitude
+
+number
+
+Selected altitude. From either the FMS, the Altitude Control
+Panel, or the current aircraft altitude.
+Selected altitude in feet.
+
+• lon
+
+(continued on next page)
+
+J. Nilsson and J. Unger / Data in Brief 48 (2023) 109240
+Table 10 (continued)
+Property name
+
+Type
+
+Description
+
+• sas
+
+bool
+
+• source
+
+number
+
+• subitem7
+
+object
+
+• ah
+
+bool
+
+Source information provided, true if source contains valid
+information.
+Source: 0 = Unknown, 1 = Aircraft altitude, 2 = FCU/MCP
+altitude, 3 = FMS altitude.
+Final state selected altitude. The vertical intent value that
+corresponds with the ATC cleared altitude, as derived from the
+Altitude Control Panel (FCU/MCP).
+Altitude hold active.
+
+• altitude
+
+number
+
+Selected altitude in feet.
+
+• am
+
+bool
+
+Approach mode active.
+
+• mv
+
+bool
+
+Managed vertical mode active.
+
+• subitem13
+
+object
+
+Barometric vertical rate.
+
+• baro_vert_rate
+
+number
+
+• subitem26
+
+object
+
+Barometric rate of climb/descent in feet per minute (negative
+values indicates descent).
+Indicated airspeed.
+
+• ias
+
+number
+
+Indicated air speed in knots.
+
+• subitem27
+
+object
+
+Mach number.
+
+• mach
+
+number
+
+Mach number.
+
+Table 11
+The properties of a predicted trajectory object.
+Property name
+
+Type
+
+Description
+
+route
+• aﬂ_unit
+
+[object]
+string
+
+• aﬂ_value
+
+number
+
+Array of predicted route points.
+Unit for estimated ﬂight level at point:
+“A’’ = altitude in feet
+“F’’ = ﬂight level in 100 feet
+Value for estimated ﬂight level at point.
+
+• eto
+
+string
+
+Estimated time over point.
+
+• ﬁx_kind
+
+string
+
+• ﬁx_name
+
+string
+
+• is_ato
+
+bool
+
+Fix kind is a short text from the system describing the type of
+point.
+Name of ﬁx, if it is a named point, or coordinates as a string in
+degrees and minutes.
+True if the aircraft has passed this point, false otherwise.
+
+• lat
+
+number
+
+Latitude in WGS-84 coordinates.
+
+• lon
+
+number
+
+Longitude in WGS-84 coordinates.
+
+• point_to_be_used_as_cop
+
+bool
+
+True if the point is to be used as sector coordination point.
+
+• rﬂ_unit
+
+string
+
+• rﬂ_value
+
+number
+
+Unit of requested ﬂight level at this point:
+“A’’ = altitude in feet
+“F’’ = ﬂight level in 100 feet
+Value of the requested ﬂight level at this point.
+
+• rule
+
+string
+
+Flight rules at this point, format as in ﬂight plan item 8.
+
+time_stamp
+
+string
+
+Time when the route was predicted.
+
+7
+
+8
+
+J. Nilsson and J. Unger / Data in Brief 48 (2023) 109240
+
+Fig. 1. Visualizations of the surveillance data showing the ﬂights in Swedish airspace on three different days. The images
+are captured from our ﬂight information visualization tool developed using the Unity3D platform. From left to right;
+016–11–12 (Sunday) 1160 Flights, 2016–11–13 (Monday) 1575 Flights, 2016–11–14 (Tuesday) 1915 Flights.
+
+Table 12
+The properties of the airspace ﬁle.
+Property name
+
+Type
+
+Description
+
+unnamed
+• center_id
+
+[object]
+string
+
+• name
+
+string
+
+array of airspace information objects.
+the control center unique id:
+“1’’ = esmm
+“2’’ = esos
+Name of the control center.
+
+• points
+
+[object]
+
+Array of navigation point objects.
+
+• lat
+
+number
+
+Latitude in WGS-84 coordinates.
+
+• lon
+
+number
+
+Longitude in WGS-84 coordinates.
+
+• name
+
+string
+
+Name of point.
+
+• sectors
+
+[object]
+
+Array of air traﬃc control sectors.
+
+• name
+
+string
+
+Name of sector.
+
+• volumes
+
+[object]
+
+Array of the volumes the sector consists of.
+
+• coordinates
+
+[object]
+
+Array of coordinates of the lateral boundary of the volume.
+
+• lat
+
+number
+
+Latitude in WGS-84 coordinates.
+
+• lon
+
+number
+
+Longitude in WGS-84 coordinates.
+
+• max_alt
+
+number
+
+The maximum altitude of the volumes extent.
+
+• min_alt
+
+number
+
+The minimum altitude of the volumes extent.
+
+J. Nilsson and J. Unger / Data in Brief 48 (2023) 109240
+
+9
+
+Table 13
+The properties of the weather ﬁle.
+Property name
+
+Type
+
+Description
+
+unnamed
+• alt
+
+[object]
+number
+
+Array of weather prediction objects.
+Altitude in ﬂight levels (100 ft).
+
+• lat
+
+number
+
+Latitude in WGS-84 coordinates.
+
+• lon
+
+number
+
+Array of navigation point objects.
+
+• temp
+
+number
+
+Temperature in degrees Celsius.
+
+• time
+
+string
+
+Time stamp.
+
+• wind_dir
+
+number
+
+Predicted wind direction.
+
+• wind_spd
+
+number
+
+Predicted wind speed in knots.
+
+3. Experimental Design, Materials and Methods
+3.1. Data Sources
+The data in the SCAT dataset originate from the air traﬃc control system TopSky [1], used for
+area control in Swedish airspace. TopSky continuously records various system data and technical
+logs, and stores it for up to three months. To store data for longer periods LFV uses KOOPA,
+a system developed in-house, that collects and stores the data in its original proprietary raw
+format. KOOPA also parses and stores the most commonly used data in a database to make
+it more accessible. Most data in the this dataset was extracted from this database except for
+trajectory predictions, weather data and some additional ﬁelds in the surveillance data that was
+extracted from the raw data. Since there are no standard formats suitable for the data in this
+dataset it was transformed into JSON.
+
+3.2. Data Selection
+The data was extracted in continuous one week time-blocks to capture the variation between
+weekdays as well as variations due to the time of day. To capture seasonal variations in weather
+conditions and traﬃc ﬂow, the extracted weeks were e spread as evenly as possible over one
+year, see Table 1. The time periods were select with the following limitations in mind:
+• To get a representative traﬃc sample we avoided to sample data from any time period with
+events that had a major impact on the traﬃc patterns, such as ash clouds from volcanoes or
+pandemics.
+• To keep the data consistent we avoided any year with an update of the air traﬃc control
+systems that changed the format and/or content of the data.
+• Any weeks with system conﬁguration changes or system downtime due to maintenance were
+avoided in order to get continuous data with a single airspace conﬁguration.
+
+4. Data Extraction and Processing
+For each selected week, all ﬂight plans and radar plots, for public ﬂights (see Data ﬁltration
+below) passing Swedish airspace, were extracted from the KOOPA database using the individual
+ﬂight plan identity code (IFPLID) as a unique identiﬁer. Since both centers (ESMM and ESOS)
+
+10
+
+J. Nilsson and J. Unger / Data in Brief 48 (2023) 109240
+
+track information on ﬂights outside their respective control area many ﬂights were represented
+in the data from both centers. In order to avoid duplication of information for each ﬂight with
+various levels of completeness and correctness, only the data from the most relevant center were
+kept at all points in time. For ﬂights controlled by both centers, a transition time was calculated
+as the average time of when control was released from the ﬁrst center to the time when control
+was assumed by the second center. Data with time stamps before the transition time were then
+extracted from the ﬁrst center in control, and the data with time stamps after the transition time
+from the second center. The average time was selected as a reasonable time stamp for hand-over
+for ﬂights not traveling directly from the ﬁrst center to the other, e.g., for example ﬂights passing
+through uncontrolled or foreign airspace in between the centers. Trajectory prediction data and
+additional surveillance data (I062/380 Aircraft derived data) for each ﬂight were then extracted
+from the raw data in KOOPA. As a last step airspace data and weather data were extracted.
+
+4.1. Data Filtration
+Due to regulations, LFV may only publish data on scheduled commercial ﬂights not involved
+in any investigation or emergency, and the data in this dataset have been ﬁltered accordingly.
+For example military and other state ﬂights as well as general aviation (private ﬂights) have
+been removed. Any publication of surveillance data (radar plots) outside of Swedish airspace
+are also prohibited and were therefore ﬁltered out. A small number of the remaining ﬂights
+were removed for other reasons. Flights missing an IFPLID were removed since this information
+is required in order to correlate ﬂights between the two centers. Flights crossing the boundary
+between ESMM and ESOS more than once were removed since manual efforts would be required
+to sort out the most relevant data for each data type. Finally, ﬂights that had a radar track of
+less than 30 s in Swedish airspace were removed since they were not regarded as useful.
+
+4.2. Data Validation
+As a ﬁrst step, this dataset was validated during the extraction by logging values and comparing to the expected boundaries for applicable ﬁelds, out of bounds values were manually
+compared with the content in the original data. After the extraction, the data were compared
+to the content in the KOOPA database using a separate software that loaded each JSON ﬁle and
+compared its content with the database. Manual validation was performed on 100 randomly selected ﬂights from each week of data, in total 1300 ﬂights, by converting the data to KML and
+visually inspecting the content using Google Earth. As ﬁnal step of validation we have developed
+a visualization tool in which we load the data and can visualize its different properties. Using
+the visualization tool the structure and integrity of the dataset has been validated by ocular
+inspection and ﬁltering such that different aspects of the data can be checked for inconsistencies and errors. The data collected by KOOPA is validated by LFV as part of the normal system
+maintenance.
+Even though this dataset has been subjected to extensive validation, it is important to realize
+that the original raw data is not free from errors. For example there are sometimes errors in the
+ﬂight plans that are corrected by the air traﬃc controllers if and when they are detected. Air
+traﬃc controllers may make mistakes when entering values into the system or use the system
+in such a way that a clearance does not correspond to what actually is happening. Pilots also
+make mistakes and do not always not ﬂy according to given clearances. No effort was made to
+identify, ﬁlter out or correct any such errors in this dataset since it is a part of normal operation,
+and removal of such errors would impede the analysis of realistic scenarios.
+
+J. Nilsson and J. Unger / Data in Brief 48 (2023) 109240
+
+11
+
+Declaration of Competing Interest
+The authors declare that they have no known competing ﬁnancial interests or personal relationships that could have appeared to inﬂuence the work reported in this paper.
+
+Data Availability
+SCAT dataset (Original data) (Mendeley Data).
+CRediT Author Statement
+Jens Nilsson: Conceptualization, Methodology, Software, Validation, Writing – original draft;
+Jonas Unger: Conceptualization, Methodology, Supervision, Writing – review & editing.
+
+Ethics Statements
+Informed consent to extract and publish this dataset was obtained from LFV who owns and
+operates the two air traﬃc control centers from which the data in this dataset originates. Any
+sensitive data has been removed from this dataset and the LFV data redistribution policies were
+complied with.
+
+Acknowledgments
+This work was supported and funded by LFV and Traﬁkverket, grant number TRV 2019/36272,
+as a part of their research on automation in air traﬃc control.
+References
+[1] TopSky - ATC. https://www.thalesgroup.com/en/topsky-atc, 2022 (Accessed 6 September 2022).
+[2] ARTAS - Air traﬃc management surveillance tracker and server. https://www.eurocontrol.int/product/artas, 2023
+(Accessed 14 March 2023).
+[3] WMO - World Meteorological Organization (2023) https://public.wmo.int/en. (Accessed 14 March 2023).
+[4] M. Bourgois, M. Sfyroeras, Open data for air transport research: dream or reality? in: Proceedings of the 10th International Symposium on Open Collaboration (OpenSym 2014), 2014 ACM.
+[5] R. Koelle, Open source software and crowd sourced data for operational performance analysis, reproducibility in operational ANS performance benchmarking, Twelfth USA/Europe Air Traﬃc Management Research and Development
+Seminar (ATM2017, 2017.
+[6] OpenSky Network. https://opensky-network.org, 2022 (Accessed 6 September 2022).
+[7] ADS-B Exchange. https://www.adsbexchange.com, 2022 (Accessed 6 September 2022).
+[8] J. Nilsson, J. Unger, SCAT Dataset, v1, 2022, doi:10.17632/8yn985bwz5.1.
+[9] D. Crockford, The JavaScript Object Notation (JSON) Data Interchange Format, RFC 8259, Internet Engineering Task
+Force, December 2017.
+[10] J. Nilsson, jnlfv/SCATUtils: v1.0.1, (2022). https://doi.org/10.5281/zenodo.7184854.
+[11] Eurocontrol Standard Document For Surveillance Data Exchange Part 9 : Category 062 SDPS Track Messages, Eurocontrol standard, December 2014.
+
+
